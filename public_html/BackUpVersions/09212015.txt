@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>2D Racing Game</title>
+        <!-- Babylon.js -->
+        <script src="http://www.babylonjs.com/hand.minified-1.2.js"></script>
+        <script src="http://www.babylonjs.com/cannon.js"></script>
+        <script src="http://www.babylonjs.com/oimo.js"></script>
+        <script src="http://www.babylonjs.com/babylon.js"></script>
+        <script src="track.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+        var firstScene = 0;
+        var xindex = 0;
+        var yindex = 0;
+        var startingx = 0;
+        var startingy = 0;
+        var xcollision = false;
+        var ycollision = false;
+        var scene = new BABYLON.Scene(engine);
+
+        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(6, 2, -20), scene);
+        
+
+       var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0, 15, -15), scene);
+       light.intensity = .5;
+       
+       
+
+
+        /*var track = [[0,6,0,0,0],
+                    [0,1,1,1,0],
+                    [0,1,0,1,0],
+                    [0,1,1,1,0],
+                    [0,1,0,0,0]];*/
+
+        var trackwidth = 62;
+        var trackheight = 5;
+        var size = 3;
+        for(var i=0;i<trackwidth;i++){
+            for(var j=0;j<trackheight;j++){                
+                if(track[i][j] === 6){
+                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                    lane.scaling.y = 3;
+                    lane.scaling.x = 3;
+                    lane.scaling.z = 0.01;
+                    lane.position.x = j*size;
+                    lane.position.y = i*size;
+                    lane.renderingGroupId = 1;
+                    lane.checkCollisions = true;
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("road-texture4.png", scene);
+                    lane.material = laneMaterial;
+                    var car = BABYLON.Mesh.CreateBox("base", 1, scene);
+                    car.scaling.y = 1;
+                    car.scaling.x = 1;
+                    car.scaling.z = 0.1;
+                    var material = new BABYLON.StandardMaterial("Material", scene);
+                    material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                    car.material = material;
+                    car.renderingGroupId = 1;
+                    car.position = new BABYLON.Vector3(j*size, i*size, 0);
+                }
+                else if(track[i][j] === 0){   //tileable_grass_00.png
+                    var grass = BABYLON.Mesh.CreateBox("box", 0, scene);
+                    grass.scaling.x = 3;
+                    grass.scaling.y = 3;
+                    grass.scaling.z = 0.01; //grass is bigger than road
+                    grass.renderingGroupId = 1;
+                    grass.position = new BABYLON.Vector3(j*size, i*size, 0);
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00.png", scene);
+                    grass.material = laneMaterial;
+                }
+                else{// if(track[i][j] === 1){
+                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                    lane.scaling.y = 3;
+                    lane.scaling.x = 3;
+                    lane.scaling.z = 0.01;
+                    lane.position.x = j*size;
+                    lane.position.y = i*size;
+                    lane.renderingGroupId = 1;
+                    lane.checkCollisions = true;
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("road-texture4.png", scene);
+                    lane.material = laneMaterial;
+                }
+            }
+        }
+
+    engine.runRenderLoop(function () {
+        scene.render();   
+        if(firstScene === 0){
+            startingx = car.position.x+size/2;
+            startingx = Math.floor(startingx/size);
+            startingy = car.position.y+size/2;
+            startingy = Math.floor(startingy/size);
+            firstScene++;
+        }
+        checkInput();
+        move();
+    });
+    
+    // Resize
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+    
+    var keys = [];
+    var keysUp = [38];
+    var keysDown = [40];
+    var keysLeft = [37];
+    var keysRight = [39];
+    var direction = new BABYLON.Vector3(0, 0, 0);
+    var cameraDirection = new BABYLON.Vector3(0, 0, 0);
+    var speed = 0.05;
+    var scale = 1;
+    var position = 0;
+    var collision = false;
+    var directionx = new BABYLON.Vector3(0, 0, 0);
+    var directiony = new BABYLON.Vector3(0, 0, 0);
+
+
+    var checkInput = function () {
+        for (var index = 0; index < keys.length; index++) {
+            var keyCode = keys[index];
+            if (keysLeft.indexOf(keyCode) !== -1) {
+                directionx.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
+            } else if (keysUp.indexOf(keyCode) !== -1) {
+                directiony.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
+                cameraDirection.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
+            } else if (keysRight.indexOf(keyCode) !== -1) {
+                directionx.addInPlace(new BABYLON.Vector3(speed * scale, 0, 0));
+            } else if (keysDown.indexOf(keyCode) !== -1) {
+                directiony.addInPlace(new BABYLON.Vector3(0, -speed * scale, 0));
+            }
+        }
+    };
+    
+    var move = function(){
+         car.position.addInPlace(directionx);
+         camera.position.addInPlace(directionx);
+         if(checkCollisionsx()){
+            car.position.addInPlace(new BABYLON.Vector3(-directionx.x,0,0));
+            camera.position.addInPlace(new BABYLON.Vector3(-directionx.x,0,0));
+         }
+         car.position.addInPlace(directiony);
+         camera.position.addInPlace(directiony);
+         if(checkCollisionsy()){
+            car.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
+            camera.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
+         }
+        directionx = new BABYLON.Vector3(0, 0, 0);
+        directiony = new BABYLON.Vector3(0, 0, 0);
+    };
+    
+    var checkCollisionsx = function(){
+       var xindex = car.position.x+size/2;
+            xindex = Math.floor(xindex/size);
+            
+            var rightside = (car.position.x+0.5)+size/2;
+            rightside = Math.floor(rightside/size);
+            
+            var leftside = (car.position.x-0.5)+size/2;
+            leftside = Math.floor(leftside/size);
+            
+            if(leftside !== startingx || rightside !== startingx){
+                xcollision = true;
+                if(leftside !== startingx){
+                    xindex = leftside;
+                    startingx = leftside;
+                }
+                else if(rightside !== startingx){
+                    xindex = rightside;
+                    startingx = rightside;
+                }
+            }  
+            
+            var yindex = car.position.y+size/2;
+            yindex = Math.floor(yindex/size);
+            
+            var upside = (car.position.y+0.5)+size/2;
+            upside = Math.floor(upside/size);
+            
+            var downside = (car.position.y-0.5)+size/2;
+            downside = Math.floor(downside/size);
+            
+            if(upside !== startingy || downside !== startingy){
+                ycollision = true;
+                if(upside !== startingy){
+                    yindex = upside;
+                    startingy = yindex;
+                }
+                else if(downside !== startingy){
+                    yindex = downside;
+                    startingy = downside;
+                }
+            }
+            
+            if(track[yindex][xindex] === 0 || xindex < 0 || yindex < 0 || xindex === 5){
+                console.log("There is a collision on x");
+                return true;
+            }
+            else{
+                return false;
+            }          
+            
+    };
+    
+    
+     var checkCollisionsy = function(){
+       var xindex = car.position.x+size/2;
+            xindex = Math.floor(xindex/size);
+            
+            var rightside = (car.position.x+0.5)+size/2;
+            rightside = Math.floor(rightside/size);
+            
+            var leftside = (car.position.x-0.5)+size/2;
+            leftside = Math.floor(leftside/size);
+            
+            if(leftside !== startingx || rightside !== startingx){
+                xcollision = true;
+                if(leftside !== startingx){
+                    xindex = leftside;
+                    startingx = leftside;
+                }
+                else if(rightside !== startingx){
+                    xindex = rightside;
+                    startingx = rightside;
+                }
+            }  
+            
+            var yindex = car.position.y+size/2;
+            yindex = Math.floor(yindex/size);
+            
+            var upside = (car.position.y+0.5)+size/2;
+            upside = Math.floor(upside/size);
+            
+            var downside = (car.position.y-0.5)+size/2;
+            downside = Math.floor(downside/size);
+            
+            if(upside !== startingy || downside !== startingy){
+                ycollision = true;
+                if(upside !== startingy){
+                    yindex = upside;
+                    startingy = yindex;
+                }
+                else if(downside !== startingy){
+                    yindex = downside;
+                    startingy = downside;
+                }
+            }
+            
+            if(track[yindex][xindex] === 0 || xindex < 0 || yindex < 0 || xindex === 5){
+                console.log("There is a collision on y");
+                return true;
+            }
+            else{
+                return false;
+            }      
+    };
+    
+    var onKeyDown = function (evt) {
+            if (keysUp.indexOf(evt.keyCode) !== -1 ||
+                keysDown.indexOf(evt.keyCode) !== -1 ||
+                keysLeft.indexOf(evt.keyCode) !== -1 ||
+                keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = keys.indexOf(evt.keyCode);
+
+                if (index === -1) {
+                    keys.push(evt.keyCode);
+                }
+                evt.preventDefault();
+            }
+        };
+
+        var onKeyUp = function (evt) {
+            if (keysUp.indexOf(evt.keyCode) !== -1 ||
+                keysDown.indexOf(evt.keyCode) !== -1 ||
+                keysLeft.indexOf(evt.keyCode) !== -1 ||
+                keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = keys.indexOf(evt.keyCode);
+
+                if (index >= 0) {
+                    keys.splice(index, 1);
+                }
+                evt.preventDefault();
+            }
+        };
+        
+        window.addEventListener("keydown", onKeyDown, false);
+        window.addEventListener("keyup", onKeyUp, false);
+
+    </script>
+</body>
+</html>

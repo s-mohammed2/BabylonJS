@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>2D Racing Game</title>
+        <!-- Babylon.js -->
+        <script src="http://www.babylonjs.com/hand.minified-1.2.js"></script>
+        <script src="http://www.babylonjs.com/cannon.js"></script>
+        <script src="http://www.babylonjs.com/oimo.js"></script>
+        <script src="http://www.babylonjs.com/babylon.js"></script>
+<!--        <script type="text/javascript" src="track.js"></script>-->
+        <script type="text/javascript" src="TrackGenerator.js"></script>
+<!--            <script type="text/javascript" src="trackConstruction.js"></script>-->
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+            #time {
+                position: absolute;
+                right: 30px;
+                top: 30px;
+                font-size: 3em;
+                color: white;
+                font-family: "Segoe UI";
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+        <div id="time">Time: 0</div>
+<!--    <script>
+        smallTrackPratice();
+</script>
+-->  
+    <script type="text/javascript"> 
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+        var firstScene = 0;
+        var scene = new BABYLON.Scene(engine);
+        var background0 = new BABYLON.Layer("back0", "Ferrari.jpg", scene);
+
+        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -20), scene);
+        //camera.attachControl(canvas, true);
+        
+
+       var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0, 15, -15), scene);
+       light.intensity = .5;
+       
+            //trackGeneration();
+            //alert("I am outside track generation");
+           
+            var size = 1;
+            var carScale = 0.5;
+            for(var i=0;i<trackheight;i++){
+                for(var j=0;j<trackwidth;j++){                
+                    if(track[i][j] === 6){
+                        //alert(" I am in car position ");
+                        var x = j*size;
+                        var y = i*size;
+                        var half = size/2;
+                        //Inside Triangle
+                        var triangle = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x+half, y-half);
+                        var material = new BABYLON.StandardMaterial("texturelane", scene);
+                        //material.diffuseTexture = new BABYLON.Texture("asphalt_texture409.jpg", scene);
+                        material.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle.material = material;
+                        triangle.material.backFaceCulling = false;
+                        var triangle2 = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x-half, y+half);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle2.material = laneMaterial;
+                        triangle2.material.backFaceCulling = false;
+                        var car = BABYLON.Mesh.CreateBox("base", 1, scene);
+                        car.scaling.y = carScale;
+                        car.scaling.x = carScale;
+                        car.scaling.z = 0.1;
+                        var material = new BABYLON.StandardMaterial("Material", scene);
+                        material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                        car.material = material;
+                        car.renderingGroupId = 1;
+                        car.position = new BABYLON.Vector3(j*size, i*size, 0);
+                        //camera.setTarget(car.position);
+                    }
+                    else if(track[i][j] === 0){   //tileable_grass_00.png
+                        var grass = BABYLON.Mesh.CreateBox("box", 0, scene);
+                        grass.scaling.x = size;
+                        grass.scaling.y = size;
+                        grass.scaling.z = 0.01; //grass is bigger than road
+                        grass.renderingGroupId = 1;
+                        grass.position = new BABYLON.Vector3(j*size, i*size, 0);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00.png", scene);
+                        grass.material = laneMaterial;
+                    }
+                    else if(track[i][j] === -1){
+                        var grass = BABYLON.Mesh.CreateBox("box", 0, scene);
+                        grass.scaling.x = size;
+                        grass.scaling.y = size;
+                        grass.scaling.z = 0.01; //grass is bigger than road
+                        grass.renderingGroupId = 1;
+                        grass.position = new BABYLON.Vector3(j*size, i*size, 0);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00(1).png", scene);
+                        grass.material = laneMaterial;
+                    }
+                    else if(track[i][j] === 2){
+                        var x = j*size;
+                        var y = i*size;
+                        var half = size/2;
+                        //Inside Triangle
+                        var triangle = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x+half, y-half);
+                        var material = new BABYLON.StandardMaterial("texturelane", scene);
+                        //material.diffuseTexture = new BABYLON.Texture("asphalt_texture409.jpg", scene);
+                        material.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle.material = material;
+                        triangle.material.backFaceCulling = false;
+                        var triangle2 = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x-half, y+half);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00(1).png", scene);
+                        triangle2.material = laneMaterial;
+                        triangle2.material.backFaceCulling = false;
+                    }
+                    else if(track[i][j] === 3){
+                        var x = j*size;
+                        var y = i*size;
+                        var half = size/2;
+                        //Inside Triangle
+                        var triangle = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x+half, y-half);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00(1).png", scene);
+                        triangle.material = laneMaterial;
+                        triangle.material.backFaceCulling = false;
+                        var triangle2 = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x-half, y+half);
+                        var material = new BABYLON.StandardMaterial("texturelane", scene);
+                        material.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle2.material = material;
+                        triangle2.material.backFaceCulling = false;
+                    }
+                    else if(track[i][j] === 4){
+                        var x = j*size;
+                        var y = i*size;
+                        var half = size/2;
+                        //Inside Triangle
+                        var triangle = drawTriangle(scene, "test1", x+half, y-half, x-half, y+half, x+half, y+half);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00(1).png", scene);
+                        triangle.material = laneMaterial;
+                        triangle.material.backFaceCulling = false;
+                        var triangle2 = drawTriangle(scene, "test1", x+half, y-half, x-half, y+half, x-half, y-half);
+                        var material = new BABYLON.StandardMaterial("texturelane", scene);
+                        material.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle2.material = material;
+                        triangle2.material.backFaceCulling = false;
+                    }
+                    else if(track[i][j] === 5){
+                        var x = j*size;
+                        var y = i*size;
+                        var half = size/2;
+                        //Inside Triangle
+                        var triangle = drawTriangle(scene, "test1", x+half, y-half, x-half, y+half, x+half, y+half);
+                        var material = new BABYLON.StandardMaterial("texturelane", scene);
+                        material.diffuseTexture = new BABYLON.Texture("road-texture4.png", scene);
+                        material.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle.material = material;
+                        triangle.material.backFaceCulling = false;
+                        var triangle2 = drawTriangle(scene, "test1", x+half, y-half, x-half, y+half, x-half, y-half);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00(1).png", scene);
+                        triangle2.material = laneMaterial;
+                        triangle2.material.backFaceCulling = false;
+                    }
+                    else if(track[i][j] === 8){
+                        var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                        lane.scaling.y = size;
+                        lane.scaling.x = size;
+                        lane.scaling.z = 0.01;
+                        lane.position.x = j*size;
+                        lane.position.y = i*size;
+                        lane.renderingGroupId = 1;
+                        lane.checkCollisions = true;
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        lane.material = laneMaterial;
+                    }
+                    else{
+                        var x = j*size;
+                        var y = i*size;
+                        var half = size/2;
+                        //Inside Triangle
+                        var triangle = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x+half, y-half);
+                        var material = new BABYLON.StandardMaterial("texturelane", scene);
+                        //material.diffuseTexture = new BABYLON.Texture("asphalt_texture409.jpg", scene);
+                        material.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle.material = material;
+                        triangle.material.backFaceCulling = false;
+                        var triangle2 = drawTriangle(scene, "test1", x-half, y-half, x+half, y+half, x-half, y+half);
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        laneMaterial.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        triangle2.material = laneMaterial;
+                        triangle2.material.backFaceCulling = false;
+                    }
+                    /*else{// if(track[i][j] === 1){
+                        var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                        lane.scaling.y = size;
+                        lane.scaling.x = size;
+                        lane.scaling.z = 0.01;
+                        lane.position.x = j*size;
+                        lane.position.y = i*size;
+                        lane.renderingGroupId = 1;
+                        lane.checkCollisions = true;
+                        var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                        if(j !== 14 && j !== 15 && j !== 33 && j !== 34)
+                            laneMaterial.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        else
+                            laneMaterial.diffuseTexture = new BABYLON.Texture("just_road.jpg", scene);
+                        lane.material = laneMaterial;
+                    }*/
+                }
+            }
+     
+     var startTime = new Date();
+     var scenes = 0;
+     var elapsedTime = 0;
+     var decision = "";
+    engine.runRenderLoop(function () {
+        if(scenes !== 1){
+            scene.render();   
+            startTime = new Date();
+            scenes++;
+        }
+        else{
+            scene.render();
+        }
+        checkInput();
+        move();
+        if(gameEnd()){
+            alert("Time for race completion "+elapsedTime);
+            alert("Thanks for playing the game  "+decision);
+            location.reload();
+        }
+        else{
+            var currentTime = new Date();
+            elapsedTime = currentTime - startTime;
+            elapsedTime = Math.floor(elapsedTime/1000);
+            document.getElementById("time").innerHTML = "Time: " + elapsedTime + " Seconds";
+        }
+    });
+    
+    // Resize
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+    
+    function drawTriangle(scene, name, x1, y1, x2, y2, x3, y3) { 
+        //Let's create a mesh for our element:
+        var triangle = new BABYLON.Mesh(name, scene);
+        //Then, the points for the triangle element:
+        var positions = [
+          x1, y1, 0,
+          x2, y2, 0,
+          x3, y3, 0
+        ];
+        //Next, we create the normals (orientation):
+        var normals = [
+          1, 1, 0,
+          1, 1, 0,
+          1, 1, 0
+        ];
+        //And the indices, for the points order:
+        var indices = [];
+        indices.push(0);
+        indices.push(1);
+        indices.push(2);
+        //Finally, we load everything in our mesh:
+        triangle.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, true);
+        triangle.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, true);
+        triangle.setIndices(indices);
+        return triangle;
+    }
+        
+    
+    var keys = [];
+    var keysUp = [38];
+    var keysDown = [40];
+    var keysLeft = [37];
+    var keysRight = [39];
+    var direction = new BABYLON.Vector3(0, 0, 0);
+    var speed = 0.3;
+    var scale = 1;
+    var collision = false;
+    var directionx = new BABYLON.Vector3(0, 0, 0);
+    var directiony = new BABYLON.Vector3(0, 0, 0);
+
+
+    var checkInput = function () {
+        for (var index = 0; index < keys.length; index++) {
+            var keyCode = keys[index];
+            if (keysLeft.indexOf(keyCode) !== -1) {
+                directionx.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
+            } else if (keysUp.indexOf(keyCode) !== -1) {
+                directiony.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
+            } else if (keysRight.indexOf(keyCode) !== -1) {
+                directionx.addInPlace(new BABYLON.Vector3(speed * scale, 0, 0));
+            } else if (keysDown.indexOf(keyCode) !== -1) {
+                directiony.addInPlace(new BABYLON.Vector3(0, -speed * scale, 0));
+            }
+        }
+    };
+    
+    var move = function(){
+         car.position.addInPlace(directionx);
+         camera.position.addInPlace(directionx);
+         if(checkCollisions()){
+            car.position.addInPlace(new BABYLON.Vector3(-directionx.x,0,0));
+            camera.position.addInPlace(new BABYLON.Vector3(-directionx.x,0,0));
+         }
+         car.position.addInPlace(directiony);
+         camera.position.addInPlace(directiony);
+         if(checkCollisions()){
+            car.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
+            camera.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
+         }
+        directionx = new BABYLON.Vector3(0, 0, 0);
+        directiony = new BABYLON.Vector3(0, 0, 0);
+    };
+    
+    function gameEnd(){
+        var xindex = car.position.x+size/2;
+        xindex = Math.floor(xindex/size);    
+        var yindex = car.position.y+size/2;
+        yindex = Math.floor(yindex/size);
+        if(track[yindex][xindex] === 7){
+            if(decision === "")
+                decision = decision+"b";
+            else
+                decision = decision+",b";
+            track[yindex][xindex] = 1;
+        }
+        else if(track[yindex][xindex] === 9){
+            if(decision === "")
+                decision = decision+"u";
+            else
+                decision = decision+",u";
+            track[yindex][xindex] = 1;
+        }
+        if(track[yindex][xindex] === 8){
+            return true;
+        }
+        else
+            return false;
+    }
+    
+    var checkCollisions = function(){
+            var xindex = car.position.x+size/2;
+            xindex = Math.floor(xindex/size);
+            
+            var yindex = car.position.y+size/2;
+            yindex = Math.floor(yindex/size);
+            
+            var rightside = (car.position.x+(carScale/2))+size/2;
+            var actualRightSide = rightside/size;
+            rightside = Math.floor(rightside/size);
+            
+            var leftside = (car.position.x-(carScale/2))+size/2;
+            var actualLeftSide = leftside/size;
+            leftside = Math.floor(leftside/size);
+            
+            var upside = (car.position.y+(carScale/2))+size/2;
+            var actualUpSide = upside/size;
+            upside = Math.floor(upside/size);
+            
+            var downside = (car.position.y-(carScale/2))+size/2;
+            var actualDownside = downside/size;
+            downside = Math.floor(downside/size);            
+            
+            //lower bound
+            if(downside < 0)
+                return true;
+            
+
+             if(track[upside][leftside] === 2){
+                 /*console.log("This upside "+upside+" actual up side "+actualUpSide);
+                console.log("This leftside "+leftside+" this actualLeftSide"+actualLeftSide);
+                console.log("This is y "+(actualUpSide-upside)+" This is x "+(actualLeftSide-leftside));*/
+                if((actualUpSide-upside)>=(actualLeftSide-leftside)){
+                    return true;
+                }
+            }
+            else if(track[upside][rightside] === 2 ){
+                if((actualUpSide-upside)>=(actualRightSide-rightside)){
+                    return true;
+                }
+            }
+            
+            if(track[downside][rightside] === 3){
+                if((actualDownside-downside)<= (actualRightSide-rightside)){
+                    return true;
+                }
+            }
+            else if(track[downside][leftside] === 3){
+                if((actualDownside-downside)<=(actualLeftSide-leftside)){
+                    return true;
+                }
+            }
+            
+            if(track[downside][leftside] === 5){
+                var yparameter = actualDownside-downside;
+                var xparamater = actualLeftSide-leftside;
+                xparamater = size-xparamater;
+                if(yparameter<=xparamater){
+                    //console.log("True form downnside");
+                    return true;
+                }
+            }
+            else if(track[upside][leftside] === 5){
+                var yparameter = actualUpSide-upside;
+                var xparamater = actualLeftSide-leftside;
+                xparamater = size-xparamater;
+                if(yparameter<=xparamater){
+                    //console.log("True from upside ");
+                    return true;
+                }
+            }
+            
+            
+            
+            if(track[upside][rightside] === 4){
+                var yparameter = actualUpSide-upside;
+                var xparamater = actualRightSide-rightside;
+                xparamater = size-xparamater;
+                if(yparameter>=xparamater){
+                    //console.log("True from upside ");
+                    return true;
+                }
+            }
+            else if(track[downside][rightside] === 4){
+                var yparameter = actualDownside-downside;
+                var xparamater = actualRightSide-rightside;
+                xparamater = size-xparamater;
+                if(yparameter>=xparamater){
+                    //console.log("True form downnside");
+                    return true;
+                }
+            }
+            
+
+
+            if(track[upside][leftside] === 0){
+                return true;
+            }
+            else if(track[upside][rightside] === 0 ){
+                return true;
+            }
+            else if(track[downside][leftside] === 0){
+                return true;
+            }
+            else if(track[downside][rightside] === 0){
+                return true;
+            }
+            else if(leftside < 0 || downside < 0){
+                return true;
+            }
+            else{
+                return false;
+            }          
+            
+    };
+    
+    var onKeyDown = function (evt) {
+            if (keysUp.indexOf(evt.keyCode) !== -1 ||
+                keysDown.indexOf(evt.keyCode) !== -1 ||
+                keysLeft.indexOf(evt.keyCode) !== -1 ||
+                keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = keys.indexOf(evt.keyCode);
+
+                if (index === -1) {
+                    keys.push(evt.keyCode);
+                }
+                evt.preventDefault();
+            }
+        };
+
+        var onKeyUp = function (evt) {
+            if (keysUp.indexOf(evt.keyCode) !== -1 ||
+                keysDown.indexOf(evt.keyCode) !== -1 ||
+                keysLeft.indexOf(evt.keyCode) !== -1 ||
+                keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = keys.indexOf(evt.keyCode);
+
+                if (index >= 0) {
+                    keys.splice(index, 1);
+                }
+                evt.preventDefault();
+            }
+        };
+        
+        window.addEventListener("keydown", onKeyDown, false);
+        window.addEventListener("keyup", onKeyUp, false);
+
+    </script>
+</body>
+</html>

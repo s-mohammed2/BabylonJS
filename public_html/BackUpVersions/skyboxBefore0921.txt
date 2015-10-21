@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>2D Racing Game</title>
+        <!-- Babylon.js -->
+        <script src="http://www.babylonjs.com/hand.minified-1.2.js"></script>
+        <script src="http://www.babylonjs.com/cannon.js"></script>
+        <script src="http://www.babylonjs.com/oimo.js"></script>
+        <script src="http://www.babylonjs.com/babylon.js"></script>
+        <script src="track.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+        var lastFramex = 0;
+        var lastFramey = 0;
+        var lastCamerax = 0;
+        var lastCameray = 0;
+        var xindex = 0;
+        var yindex = 0;
+        
+        var scene = new BABYLON.Scene(engine);
+
+        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(6, 2, -20), scene);
+        //camera.setTarget(new BABYLON.Vector3.Zero());
+        //camera.attachControl(canvas, false);
+
+       var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0, 15, -15), scene);
+       light.intensity = .5;
+       
+       var skybox = BABYLON.Mesh.CreateBox("skyBox", 800.0, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skybox.material = skyboxMaterial;
+
+
+        /*var track = [[0,6,0,0,0],
+                    [0,1,1,1,0],
+                    [0,1,0,1,0],
+                    [0,1,1,1,0],
+                    [0,1,0,0,0]];*/
+
+        var trackwidth = 61;
+        var trackheight = 5;
+        var size = 3;
+        for(var i=0;i<trackwidth;i++){
+            for(var j=0;j<trackheight;j++){                
+                if(track[i][j] === 6){
+                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                    lane.scaling.y = 3;
+                    lane.scaling.x = 3;
+                    lane.scaling.z = 0.01;
+                    lane.position.x = j*size;
+                    lane.position.y = i*size;
+                    lane.renderingGroupId = 1;
+                    lane.checkCollisions = true;
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("road-texture4.png", scene);
+                    lane.material = laneMaterial;
+                    var car = BABYLON.Mesh.CreateBox("base", 1, scene);
+                    car.scaling.y = 1;
+                    car.scaling.x = 1;
+                    car.scaling.z = 0.1;
+                    var material = new BABYLON.StandardMaterial("Material", scene);
+                    material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                    car.material = material;
+                    car.renderingGroupId = 1;
+                    car.position = new BABYLON.Vector3(j*size, i*size, -2);
+                }
+                else if(track[i][j] === 0){   //tileable_grass_00.png
+                    var grass = BABYLON.Mesh.CreateBox("box", 0, scene);
+                    grass.scaling.x = 3;
+                    grass.scaling.y = 3;
+                    grass.scaling.z = 0.01; //grass is bigger than road
+                    grass.renderingGroupId = 1;
+                    grass.position = new BABYLON.Vector3(j*size, i*size, 0);
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass_00.png", scene);
+                    grass.material = laneMaterial;
+                }
+                else{// if(track[i][j] === 1){
+                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                    lane.scaling.y = 3;
+                    lane.scaling.x = 3;
+                    lane.scaling.z = 0.01;
+                    lane.position.x = j*size;
+                    lane.position.y = i*size;
+                    lane.renderingGroupId = 1;
+                    lane.checkCollisions = true;
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("road-texture4.png", scene);
+                    lane.material = laneMaterial;
+                }
+            }
+        }
+
+    engine.runRenderLoop(function () {
+        scene.render();
+        checkInput();
+        move();
+        checkCollisions();
+        lastFramex = car.position.x;
+        lastFramey = car.position.y;
+        lastCamerax = camera.position.x;
+        lastCameray = camera.position.y;
+    });
+    
+    // Resize
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+    
+    var keys = [];
+    var keysUp = [38];
+    var keysDown = [40];
+    var keysLeft = [37];
+    var keysRight = [39];
+    var direction = new BABYLON.Vector3(0, 0, 0);
+    var cameraDirection = new BABYLON.Vector3(0, 0, 0);
+    //var speed = 0.007;
+    var speed = 0.01;
+    var scale = 1;
+    var position = 0;
+
+    var checkInput = function () {
+        
+        for (var index = 0; index < keys.length; index++) {
+            var keyCode = keys[index];
+            if (keysLeft.indexOf(keyCode) !== -1) {
+                direction.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
+            } else if (keysUp.indexOf(keyCode) !== -1) {
+                direction.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
+                cameraDirection.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
+            } else if (keysRight.indexOf(keyCode) !== -1) {
+                direction.addInPlace(new BABYLON.Vector3(speed * scale, 0, 0));
+            } else if (keysDown.indexOf(keyCode) !== -1) {
+                direction.addInPlace(new BABYLON.Vector3(0, -speed * scale, 0));
+            }
+        }
+    };
+    
+    var move = function() {
+        //alert("movingt the car");
+        car.position.addInPlace(direction);
+        //car.position.addInPlace(direction.x,0);
+        //if collision
+        //car.position.addInPlace(-direction.x,0);
+        camera.position.addInPlace(direction);
+        direction.scaleInPlace(0.95);
+    };
+    
+    
+    var onKeyDown = function (evt) {
+            if (keysUp.indexOf(evt.keyCode) !== -1 ||
+                keysDown.indexOf(evt.keyCode) !== -1 ||
+                keysLeft.indexOf(evt.keyCode) !== -1 ||
+                keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = keys.indexOf(evt.keyCode);
+
+                if (index === -1) {
+                    keys.push(evt.keyCode);
+                }
+                evt.preventDefault();
+            }
+        };
+
+        var onKeyUp = function (evt) {
+            if (keysUp.indexOf(evt.keyCode) !== -1 ||
+                keysDown.indexOf(evt.keyCode) !== -1 ||
+                keysLeft.indexOf(evt.keyCode) !== -1 ||
+                keysRight.indexOf(evt.keyCode) !== -1) {
+                var index = keys.indexOf(evt.keyCode);
+
+                if (index >= 0) {
+                    keys.splice(index, 1);
+                }
+                evt.preventDefault();
+            }
+        };
+        
+        var checkCollisions = function(){
+            var xindex = (car.position.x)-3+size/2;
+            xindex = Math.floor(xindex/size);
+            
+            var yindex = car.position.y+size/2;
+            yindex = Math.floor(yindex/(size));
+
+            console.log("x is "+xindex+"y is "+yindex);
+            
+             if(track[yindex][xindex] === 0 || xindex < 0 || yindex < 0 || xindex === 5){
+                //alert("Differene is "+(car.position.x-lastFramex));
+                car.position.x = lastFramex;
+                car.position.y = lastFramey;
+                camera.position.x = lastCamerax;
+                camera.position.y = lastCameray;
+            }
+            
+        };
+        
+        window.addEventListener("keydown", onKeyDown, false);
+        window.addEventListener("keyup", onKeyUp, false);
+
+    </script>
+</body>
+</html>
