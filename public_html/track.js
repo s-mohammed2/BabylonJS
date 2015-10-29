@@ -1,5 +1,75 @@
- var trackheight = 128;
-            var trackwidth = 48;
+function gameEnd(){
+        var xindex = car.position.x+size/2;
+        xindex = Math.floor(xindex/size);    
+        
+        var yindex = car.position.y+size/2;
+        yindex = Math.floor(yindex/size);
+  
+        if(track[yindex][xindex] === 7 || track[yindex][xindex] === 77 || track[yindex][xindex] === 79){
+            if(decision === "")
+                decision = decision+"ls";
+            else
+                decision = decision+",ls";
+            revertDecision(yindex, xindex);
+        }
+        else if(track[yindex][xindex] === 9){
+            if(decision === "")
+                decision = decision+"st";
+            else
+                decision = decision+",st";
+            revertDecision(yindex, xindex);
+        }
+        else if(track[yindex][xindex] === 90){
+            if(decision === "")
+                decision = decision+"ss";
+            else
+                decision = decision+",ss";
+            revertDecision(yindex, xindex);
+        }
+        if(track[yindex][xindex] === 70 || track[yindex][xindex] === 78){
+            if(decision === "")
+                decision = decision+"lt";
+            else
+                decision = decision+",lt";
+            revertDecision(yindex, xindex);
+        }
+        if(track[yindex][xindex] === 8){
+            track[yindex][xindex] = 1;
+            scenes = 2;
+            return true;
+        }
+        else
+            return false;
+    }
+
+
+
+    function checkCarPosition(index){
+        if(track[upside][leftside] === index){
+                return true;
+            }
+            else if(track[upside][rightside] === index){
+                return true;
+            }
+            else if(track[downside][leftside] === index){
+                return true;
+            }
+            else if(track[downside][rightside] === index){
+                return true;
+            }
+            else{
+                return false;
+            }
+    }
+
+
+
+
+
+
+
+var trackheight = 128;
+var trackwidth = 48;
 //              [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] 
 var track =   [ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

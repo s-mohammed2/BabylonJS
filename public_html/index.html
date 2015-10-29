@@ -63,8 +63,10 @@
         skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         skybox.material = skyboxMaterial;
-
         
+        var coundtown = new BABYLON.Sound("coundtown", "audio/race-countdown1.mp3", scene, null);
+        
+        var tracks = [];
         var size = 1;
         var carScale = 0.5;       
         var startTime = new Date();
@@ -93,11 +95,10 @@
                     car.scaling.x = carScale;
                     car.scaling.z = 0.1;
                     var material = new BABYLON.StandardMaterial("Material", scene);
-                    material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                    material.diffuseTexture = new BABYLON.Texture("Car_thumb1.png", scene)
                     car.material = material;
                     car.renderingGroupId = 1;
                     car.position = new BABYLON.Vector3(j*size, i*size, 0);
-                    //camera.setTarget(car.position);
                 }
                 else if(track[i][j] === 0){   //tileable_grass_00.png
                     var grass = BABYLON.Mesh.CreateBox("box", 0, scene);
@@ -189,7 +190,7 @@
                     laneMaterial.diffuseTexture = new BABYLON.Texture("asphalt_text.jpg", scene);
                     lane.material = laneMaterial;
                 }
-                else if(track[i][j] === -1 || track[i][j] === 77){
+                else if(track[i][j] === -1 || track[i][j] === 77 || track[i][j] === 70){
                     var x = j*size;
                     var y = i*size;
                     var half = size/2;
@@ -222,14 +223,13 @@
                     triangle2.material = laneMaterial;
                     triangle2.material.backFaceCulling = false;
                 }
-                else if(track[i][j] === 11 || track[i][j] === 78){
+                else if(track[i][j] === 11 || track[i][j] === 79 || track[i][j] === 78){
                     var x = j*size;
                     var y = i*size;
                     var half = size/2;
                     //Inside Triangle
                     var triangle = drawTriangle(scene, "test1", x+half, y-half, x-half, y+half, x+half, y+half);
                     var material = new BABYLON.StandardMaterial("texturelane", scene);
-                    material.diffuseTexture = new BABYLON.Texture("road-texture4.png", scene);
                     material.diffuseTexture = new BABYLON.Texture("asphalt_text.jpg", scene);
                     triangle.material = material;
                     triangle.material.backFaceCulling = false;
@@ -415,16 +415,22 @@
             loadingScreen(0);
             while(person === "" || person === null)
                 person = prompt("Please enter your name", " ");
-            scene.render();
             startCount = new Date();
             scenes = 1;
+            scene.render();
         }
         else{
             var temp = new Date();
             var timer  = temp - startCount;
             timer = Math.floor(timer/1000);
-            if(timer <= 3){
-                document.getElementById('time_div').innerHTML = timer;
+            if(timer <= 4){
+                if(timer !== 0){
+                    timer = 4 - timer;
+                    if(timer === 0)
+                        document.getElementById('time_div').innerHTML = "GO!!";
+                    else
+                        document.getElementById('time_div').innerHTML = timer;
+                }
             }
             else if(scenes !== 2){
                 document.getElementById('time_div').style.display = "none";
@@ -437,11 +443,12 @@
         if(scenes === 2){
             checkInput();
             move();
+            //checkDecisions();
             if(gameEnd()){
                 alert("Time for race completion "+elapsedTime);
                 alert("Thanks for playing the game  "+decision);
-                var dataToSend = elapsedTime+","+person+","+decision;
-                //window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
+                var dataToSend = elapsedTime+","+person+":"+decision;
+                window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
             }
             else{
                 var currentTime = new Date();
@@ -546,28 +553,171 @@
     function gameEnd(){
         var xindex = car.position.x+size/2;
         xindex = Math.floor(xindex/size);    
+        
         var yindex = car.position.y+size/2;
         yindex = Math.floor(yindex/size);
-        if(track[yindex][xindex] === 7){
+  
+        if(track[yindex][xindex] === 7 || track[yindex][xindex] === 77 || track[yindex][xindex] === 79){
             if(decision === "")
-                decision = decision+"b";
+                decision = decision+"ls";
             else
-                decision = decision+",b";
+                decision = decision+",ls";
             track[yindex][xindex] = 1;
+            revertDecision(yindex, xindex);
         }
         else if(track[yindex][xindex] === 9){
             if(decision === "")
-                decision = decision+"u";
+                decision = decision+"st";
             else
-                decision = decision+",u";
+                decision = decision+",st";
             track[yindex][xindex] = 1;
+            revertDecision(yindex, xindex);
+        }
+        else if(track[yindex][xindex] === 90){
+            if(decision === "")
+                decision = decision+"ss";
+            else
+                decision = decision+",ss";
+            track[yindex][xindex] = 1;
+            revertDecision(yindex, xindex);
+        }
+        if(track[yindex][xindex] === 70 || track[yindex][xindex] === 78){
+            if(decision === "")
+                decision = decision+"lt";
+            else
+                decision = decision+",lt";
+            track[yindex][xindex] = 1;
+            revertDecision(yindex, xindex);
         }
         if(track[yindex][xindex] === 8){
             track[yindex][xindex] = 1;
+            scenes = 2;
             return true;
         }
         else
             return false;
+    }
+    
+    
+    function revertDecision(yindex, xindex){
+        console.log("This is xindex "+xindex+" yindex "+yindex);
+        var trackPosition = yindex+1;
+        console.log("This is plus one "+trackPosition+" and track height ->"+trackheight);
+        trackPosition = Math.ceil((trackPosition/trackheight)*10); 
+        console.log("after ceil function ->"+trackPosition);
+        var actualTrack = tracks[trackPosition-1]
+        console.log("Actual Track is "+actualTrack);
+        if(actualTrack === 1 || actualTrack === 4){
+            var actualHeight = (trackPosition-1)*height+12;
+            track[actualHeight][14] = 1;
+            track[actualHeight][15] = 1;
+            track[actualHeight][42] = 1;
+        }
+        else if(actualTrack === 5 || actualTrack === 8){
+            var actualHeight = (trackPosition-1)*height+16;
+            track[actualHeight][14] = 1;
+            track[actualHeight][15] = 1;
+            track[actualHeight][40] = 1;
+            track[actualHeight][41] = 1;
+        }
+        else if(actualTrack === 2 || actualTrack === 3){
+            var actualHeight = (trackPosition-1)*height+10;
+            track[actualHeight][7] = 1;
+            track[actualHeight][33] = 1;
+            track[actualHeight][34] = 1;
+        }
+        else if(actualTrack === 6 || actualTrack === 7){
+            var actualHeight = (trackPosition-1)*height+13;
+            track[actualHeight][7] = 1;
+            track[actualHeight][8] = 1;
+            track[actualHeight][33] = 1;
+            track[actualHeight][34] = 1;
+        }
+    }
+
+    
+    function checkDecisions(){
+        if(checkCarPosition(7) !== -1){
+            if(decision === "")
+                decision = decision+"ls";
+            else
+                decision = decision+",ls";
+            revertDecision(checkCarPosition(7));
+        }
+        else if(checkCarPosition(77) !== -1){
+            if(decision === "")
+                decision = decision+"ls";
+            else
+                decision = decision+",ls";
+            revertDecision(checkCarPosition(77));
+        }
+        else if(checkCarPosition(79) !== -1){
+            if(decision === "")
+                decision = decision+"ls";
+            else
+                decision = decision+",ls";
+            revertDecision(checkCarPosition(79));
+        }
+        else if(checkCarPosition(9) !== -1){
+            if(decision === "")
+                decision = decision+"st";
+            else
+                decision = decision+",st";
+            revertDecision(checkCarPosition(9));
+        }
+        else if(checkCarPosition(90) !== -1){
+            if(decision === "")
+                decision = decision+"ss";
+            else
+                decision = decision+",ss";
+            revertDecision(checkCarPosition(90));
+        }
+        else if(checkCarPosition(70) !== -1){
+            if(decision === "")
+                decision = decision+"lt";
+            else
+                decision = decision+",lt";
+            revertDecision(checkCarPosition(70));
+        }
+        else if(checkCarPosition(78) !== -1){
+           if(decision === "")
+                decision = decision+"lt";
+            else
+                decision = decision+",lt";
+            revertDecision(checkCarPosition(78));
+        }
+    }
+
+
+
+    function checkCarPosition(index){
+        var rightside = (car.position.x+(carScale/2))+size/2;
+        rightside = Math.floor(rightside/size);
+            
+        var leftside = (car.position.x-(carScale/2))+size/2;
+        leftside = Math.floor(leftside/size);
+            
+        var upside = (car.position.y+(carScale/2))+size/2;
+        upside = Math.floor(upside/size);
+        
+        var downside = (car.position.y-(carScale/2))+size/2;
+        downside = Math.floor(downside/size);
+        
+        if(track[upside][leftside] === index){
+            return upside;
+        }
+        else if(track[upside][rightside] === index){
+            return upside;
+        }
+        else if(track[downside][leftside] === index){
+            return downside;
+        }
+        else if(track[downside][rightside] === index){
+            return downside;
+        }
+        else{
+            return -1;
+        }
     }
     
     var checkCollisions = function(){
@@ -593,15 +743,10 @@
             var actualDownside = downside/size;
             downside = Math.floor(downside/size);            
             
-            //lower bound
             if(downside < 0)
                 return true;
-            
 
              if(track[upside][leftside] === 2){
-                 /*console.log("This upside "+upside+" actual up side "+actualUpSide);
-                console.log("This leftside "+leftside+" this actualLeftSide"+actualLeftSide);
-                console.log("This is y "+(actualUpSide-upside)+" This is x "+(actualLeftSide-leftside));*/
                 if((actualUpSide-upside)>=(actualLeftSide-leftside)){
                     return true;
                 }
@@ -628,7 +773,6 @@
                 var xparamater = actualLeftSide-leftside;
                 xparamater = size-xparamater;
                 if(yparameter<=xparamater){
-                    //console.log("True form downnside");
                     return true;
                 }
             }
@@ -658,7 +802,6 @@
                 var xparamater = actualRightSide-rightside;
                 xparamater = size-xparamater;
                 if(yparameter>=xparamater){
-                    //console.log("True form downnside");
                     return true;
                 }
             }
