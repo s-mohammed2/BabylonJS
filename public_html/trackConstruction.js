@@ -8,59 +8,28 @@ function getRandomInt(min, max) {
 
 function  selectTrack(prev){
     var result = 0;
-    if(smallLargetracks === 1){
-        if(prev === 0){
-            result = getRandomInt(1,4);
-        }
-        else if((prev === 1 || prev === 2)){
-            result = getRandomInt(3, 4);
-            if(result === 3)
-                left++;
-            else 
-                right++;
-            if(left === 5)
-                result = 4;
-            else if(right === 5)
-                result = 3;
-        }
-        else if((prev === 3 || prev === 4)){
-            result = getRandomInt(1, 2);
-            if(result === 1)
-                right++;
-            else
-                left++;
-            if(left === 5)
-                result = 1;
-            else if(right === 5)
-                result = 2;
-        }
+    if(prev === 0){
+        result = getRandomInt(1,8);
     }
-    else{
-        if(prev === 0){
-            result = getRandomInt(5,8);
-        }
-        else if((prev === 5 || prev === 6)){
-            result = getRandomInt(7, 8);
-            if(result === 7)
-                left++;
-            else 
-                right++;
-            if(left === 4)
-                result = 8;
-            else if(right === 4)
-                result = 7;
-        }
-        else if((prev === 7 || prev === 8)){
-            result = getRandomInt(5, 6);
-            if(result === 4)
-                right++;
-            else
-                left++;
-            if(left === 4)
-                result = 5;
-            else if(right === 4)
-                result = 6;
-        }
+    else if((prev === 1 || prev === 5)){
+        var group = [3, 7];
+        result = group[getRandomInt(1, 2)-1];
+        left++;
+    }
+    else if((prev === 2 || prev === 6)){
+        var group = [4, 8];
+        result = group[getRandomInt(1, 2)-1];
+        right++;
+    }
+    else if((prev === 3 || prev === 7)){
+        var group = [1, 5];
+        result = group[getRandomInt(1, 2)-1];
+        right++;
+    }
+    else if((prev === 4 || prev === 8)){
+        var group = [2, 6];
+        result = group[getRandomInt(1, 2)-1];
+        left++;
     }
     return result;
 }
@@ -87,7 +56,6 @@ var endPtr = 0;
 
 function trackGeneration(){
     var carStatus = 0;
-    smallLargetracks = getRandomInt(1, 2);
     for(var i=0;i<trackheight;i++){
         track.push([]);
     }
@@ -211,8 +179,8 @@ function trackGeneration(){
             revertCar(prevSegment);
         }
     }
-    //console.log("This is good one "+track);
-    console.log("This is good one "+tracks+" and lenght is ->"+tracks.length);
+    console.log("This are left ->"+left+" This are rights ->"+right);
+    console.log("This are tracks "+tracks+" and lenght is ->"+tracks.length);
 }
 
 
