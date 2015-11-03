@@ -179,8 +179,8 @@ function trackGeneration(){
             revertCar(prevSegment);
         }
     }
-    console.log("This are left ->"+left+" This are rights ->"+right);
-    console.log("This are tracks "+tracks+" and lenght is ->"+tracks.length);
+    //console.log("This are left ->"+left+" This are rights ->"+right);
+    //console.log("This are tracks "+tracks+" and lenght is ->"+tracks.length);
 }
 
 

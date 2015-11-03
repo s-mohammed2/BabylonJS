@@ -24,7 +24,7 @@
             }
             #time {
                 position: absolute;
-                right: 30px;
+                left: 30px;
                 top: 30px;
                 font-size: 3em;
                 color: white;
@@ -48,10 +48,17 @@
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
         var scene = new BABYLON.Scene(engine);
-        //var background0 = new BABYLON.Layer("back0", "Ferrari.jpg", scene);
 
-        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -30), scene);
+        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -20), scene);
+        //BABYLON.Viewport = function (x, y, width, height); (20, 2, -20)
+        camera.viewport = new BABYLON.Viewport(0, 0, 1, 1);
         //camera.attachControl(canvas, true);
+        
+        var camera2 = new BABYLON.FreeCamera("camera2",  new BABYLON.Vector3(20, 15, -45), scene);
+        camera2.viewport = new BABYLON.Viewport(0.8, 0.8, 0.2, 0.2);
+        
+        scene.activeCameras.push(camera);
+        scene.activeCameras.push(camera2);
        
         var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0, 15, -15), scene);
         //light.intensity = .5;
@@ -398,6 +405,7 @@
 
     var startCount = new Date();
     var person = "";
+    
     engine.runRenderLoop(function () {
         if(scenes === 0){
             loadingScreen(0);
@@ -544,9 +552,11 @@
          }
          car.position.addInPlace(directiony);
          camera.position.addInPlace(directiony);
+         camera2.position.addInPlace(directiony);
          if(checkCollisions()){
             car.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
             camera.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
+            camera2.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
          }
         directionx = new BABYLON.Vector3(0, 0, 0);
         directiony = new BABYLON.Vector3(0, 0, 0);
