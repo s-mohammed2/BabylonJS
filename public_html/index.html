@@ -2,9 +2,10 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>2D Racing Game</title>
-        <script src="http://www.babylonjs.com/babylon.js"></script>
+        <script src="babylon.js"></script>
+<!--        <script src="http://www.babylonjs.com/babylon.js"></script>-->
         <script type="text/javascript" src="trackConstruction.js"></script>
 <!--        <script type="text/javascript" src="trackGenerator.js"></script>-->
         <style>
@@ -49,7 +50,7 @@
         var scene = new BABYLON.Scene(engine);
         //var background0 = new BABYLON.Layer("back0", "Ferrari.jpg", scene);
 
-        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -20), scene);
+        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -30), scene);
         //camera.attachControl(canvas, true);
        
         var light = new BABYLON.HemisphericLight("light1",new BABYLON.Vector3(0, 15, -15), scene);
@@ -176,19 +177,6 @@
                     laneMaterial.diffuseTexture = new BABYLON.Texture("tileable_grass.png", scene);
                     triangle2.material = laneMaterial;
                     triangle2.material.backFaceCulling = false;
-                }
-                else if(track[i][j] === 8){
-                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
-                    lane.scaling.y = size;
-                    lane.scaling.x = size;
-                    lane.scaling.z = 0.01;
-                    lane.position.x = j*size;
-                    lane.position.y = i*size;
-                    lane.renderingGroupId = 1;
-                    lane.checkCollisions = true;
-                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
-                    laneMaterial.diffuseTexture = new BABYLON.Texture("asphalt_text.jpg", scene);
-                    lane.material = laneMaterial;
                 }
                 else if(track[i][j] === -1 || track[i][j] === 77 || track[i][j] === 70){
                     var x = j*size;
@@ -443,11 +431,23 @@
         if(scenes === 2){
             checkInput();
             move();
-            //checkDecisions();
             if(gameEnd()){
+                scenes = 2;
                 alert("Time for race completion "+elapsedTime);
                 alert("Thanks for playing the game  "+decision);
-                var dataToSend = elapsedTime+","+person+":"+decision;
+                if(decision.length === 29){
+                    alert("Perfect -->"+decision.length);
+                }
+                else{
+                    alert("Error occured -->"+decision.length);
+                }
+                var result_div = document.getElementById('time_div');
+                result_div.style.innerHTML = "";
+                result_div.style.display = "block";
+                result_div.style.left = "285px";
+                result_div.style.top = "125px";
+                result_div.innerHTML = "Thank You for playing 2D WEGL GAME. Redirecting Please wait..";
+                var dataToSend = elapsedTime+","+person+":"+tracks.toString()+":"+decision;
                 window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
             }
             else{
@@ -516,6 +516,7 @@
         var collision = false;
         var directionx = new BABYLON.Vector3(0, 0, 0);
         var directiony = new BABYLON.Vector3(0, 0, 0);
+        var camerax = new BABYLON.Vector3(0, 0, 0);
 
 
         var checkInput = function () {
@@ -523,6 +524,7 @@
             var keyCode = keys[index];
             if (keysLeft.indexOf(keyCode) !== -1) {
                 directionx.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
+                camerax.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
             } else if (keysUp.indexOf(keyCode) !== -1) {
                 directiony.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
             } else if (keysRight.indexOf(keyCode) !== -1) {
@@ -563,7 +565,10 @@
             else
                 decision = decision+",ls";
             track[yindex][xindex] = 1;
-            revertDecision(yindex, xindex);
+            if(track[yindex][xindex+1] !== 0)
+                track[yindex][xindex+1] = 1;
+            if(track[yindex][xindex-1] !== 0)
+                track[yindex][xindex-1] = 1;
         }
         else if(track[yindex][xindex] === 9){
             if(decision === "")
@@ -571,7 +576,10 @@
             else
                 decision = decision+",st";
             track[yindex][xindex] = 1;
-            revertDecision(yindex, xindex);
+            if(track[yindex][xindex+1] !== 0)
+                track[yindex][xindex+1] = 1;
+            if(track[yindex][xindex-1] !== 0)
+                track[yindex][xindex-1] = 1;
         }
         else if(track[yindex][xindex] === 90){
             if(decision === "")
@@ -579,117 +587,30 @@
             else
                 decision = decision+",ss";
             track[yindex][xindex] = 1;
-            revertDecision(yindex, xindex);
+            if(track[yindex][xindex+1] !== 0)
+                track[yindex][xindex+1] = 1;
+            if(track[yindex][xindex-1] !== 0)
+                track[yindex][xindex-1] = 1;
         }
-        if(track[yindex][xindex] === 70 || track[yindex][xindex] === 78){
+        if(track[yindex][xindex] === 70 || track[yindex][xindex] === 78 || track[yindex][xindex] === 88){
             if(decision === "")
                 decision = decision+"lt";
             else
                 decision = decision+",lt";
             track[yindex][xindex] = 1;
-            revertDecision(yindex, xindex);
+            if(track[yindex][xindex+1] !== 0)
+                track[yindex][xindex+1] = 1;
+            if(track[yindex][xindex-1] !== 0)
+                track[yindex][xindex-1] = 1;
         }
         if(track[yindex][xindex] === 8){
             track[yindex][xindex] = 1;
-            scenes = 2;
             return true;
         }
         else
             return false;
-    }
-    
-    
-    function revertDecision(yindex, xindex){
-        console.log("This is xindex "+xindex+" yindex "+yindex);
-        var trackPosition = yindex+1;
-        console.log("This is plus one "+trackPosition+" and track height ->"+trackheight);
-        trackPosition = Math.ceil((trackPosition/trackheight)*10); 
-        console.log("after ceil function ->"+trackPosition);
-        var actualTrack = tracks[trackPosition-1]
-        console.log("Actual Track is "+actualTrack);
-        if(actualTrack === 1 || actualTrack === 4){
-            var actualHeight = (trackPosition-1)*height+12;
-            track[actualHeight][14] = 1;
-            track[actualHeight][15] = 1;
-            track[actualHeight][42] = 1;
-        }
-        else if(actualTrack === 5 || actualTrack === 8){
-            var actualHeight = (trackPosition-1)*height+16;
-            track[actualHeight][14] = 1;
-            track[actualHeight][15] = 1;
-            track[actualHeight][40] = 1;
-            track[actualHeight][41] = 1;
-        }
-        else if(actualTrack === 2 || actualTrack === 3){
-            var actualHeight = (trackPosition-1)*height+10;
-            track[actualHeight][7] = 1;
-            track[actualHeight][33] = 1;
-            track[actualHeight][34] = 1;
-        }
-        else if(actualTrack === 6 || actualTrack === 7){
-            var actualHeight = (trackPosition-1)*height+13;
-            track[actualHeight][7] = 1;
-            track[actualHeight][8] = 1;
-            track[actualHeight][33] = 1;
-            track[actualHeight][34] = 1;
-        }
-    }
-
-    
-    function checkDecisions(){
-        if(checkCarPosition(7) !== -1){
-            if(decision === "")
-                decision = decision+"ls";
-            else
-                decision = decision+",ls";
-            revertDecision(checkCarPosition(7));
-        }
-        else if(checkCarPosition(77) !== -1){
-            if(decision === "")
-                decision = decision+"ls";
-            else
-                decision = decision+",ls";
-            revertDecision(checkCarPosition(77));
-        }
-        else if(checkCarPosition(79) !== -1){
-            if(decision === "")
-                decision = decision+"ls";
-            else
-                decision = decision+",ls";
-            revertDecision(checkCarPosition(79));
-        }
-        else if(checkCarPosition(9) !== -1){
-            if(decision === "")
-                decision = decision+"st";
-            else
-                decision = decision+",st";
-            revertDecision(checkCarPosition(9));
-        }
-        else if(checkCarPosition(90) !== -1){
-            if(decision === "")
-                decision = decision+"ss";
-            else
-                decision = decision+",ss";
-            revertDecision(checkCarPosition(90));
-        }
-        else if(checkCarPosition(70) !== -1){
-            if(decision === "")
-                decision = decision+"lt";
-            else
-                decision = decision+",lt";
-            revertDecision(checkCarPosition(70));
-        }
-        else if(checkCarPosition(78) !== -1){
-           if(decision === "")
-                decision = decision+"lt";
-            else
-                decision = decision+",lt";
-            revertDecision(checkCarPosition(78));
-        }
-    }
-
-
-
+    }        
+   
     function checkCarPosition(index){
         var rightside = (car.position.x+(carScale/2))+size/2;
         rightside = Math.floor(rightside/size);
