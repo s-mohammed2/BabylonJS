@@ -44,12 +44,12 @@
     <canvas id="renderCanvas"></canvas>
     <div id="time" style="display: none;">Time: 0</div>
     <div id="time_div"></div>
-    <script type="text/javascript">
+    <script type="text/javascript">    
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
         var scene = new BABYLON.Scene(engine);
 
-        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -20), scene);
+        var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -10), scene);
         //BABYLON.Viewport = function (x, y, width, height); (20, 2, -20)
         camera.viewport = new BABYLON.Viewport(0, 0, 1, 1);
         //camera.attachControl(canvas, true);
@@ -107,6 +107,7 @@
                     car.material = material;
                     car.renderingGroupId = 1;
                     car.position = new BABYLON.Vector3(j*size, i*size, 0);
+                    camera.position = new BABYLON.Vector3(j*size, i*size, -10);
                 }
                 else if(track[i][j] === 0){   //tileable_grass_00.png
                     var grass = BABYLON.Mesh.CreateBox("box", 0, scene);
@@ -380,6 +381,32 @@
                     laneMaterial.diffuseTexture = new BABYLON.Texture("custom_side_no_right.jpg", scene);
                     lane.material = laneMaterial;
                 }
+                else if(track[i][j] === 39){
+                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                    lane.scaling.y = size;
+                    lane.scaling.x = size;
+                    lane.scaling.z = 0.01;
+                    lane.position.x = j*size;
+                    lane.position.y = i*size;
+                    lane.renderingGroupId = 1;
+                    lane.checkCollisions = true;
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("asphalt_sideStar.jpg", scene);
+                    lane.material = laneMaterial;
+                }
+                else if(track[i][j] === 35){
+                    var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
+                    lane.scaling.y = size;
+                    lane.scaling.x = size;
+                    lane.scaling.z = 0.01;
+                    lane.position.x = j*size;
+                    lane.position.y = i*size;
+                    lane.renderingGroupId = 1;
+                    lane.checkCollisions = true;
+                    var laneMaterial = new BABYLON.StandardMaterial("texturelane", scene);
+                    laneMaterial.diffuseTexture = new BABYLON.Texture("asphalt_star.jpg", scene);
+                    lane.material = laneMaterial;
+                }
                 else{// if(track[i][j] === 1){
                     var lane = BABYLON.Mesh.CreateBox("lane"+(i+j), 1, scene);
                     lane.scaling.y = size;
@@ -405,6 +432,8 @@
 
     var startCount = new Date();
     var person = "";
+    var lastFrame = 0;
+    var frameDiff = 0;
     
     engine.runRenderLoop(function () {
         if(scenes === 0){
@@ -432,6 +461,7 @@
                 document.getElementById('time_div').style.display = "none";
                 document.getElementById('time').style.display = "block";
                 startTime = new Date();
+                lastFrame = new Date();
                 scenes = 2;
             }
             scene.render();
@@ -441,14 +471,14 @@
             move();
             if(gameEnd()){
                 scenes = 2;
-                alert("Time for race completion "+elapsedTime);
+                /*alert("Time for race completion "+elapsedTime);
                 alert("Thanks for playing the game  "+decision);
                 if(decision.length === 29){
                     alert("Perfect -->"+decision.length);
                 }
                 else{
                     alert("Error occured -->"+decision.length);
-                }
+                }*/
                 var result_div = document.getElementById('time_div');
                 result_div.style.innerHTML = "";
                 result_div.style.display = "block";
@@ -456,10 +486,19 @@
                 result_div.style.top = "125px";
                 result_div.innerHTML = "Thank You for playing 2D WEGL GAME. Redirecting Please wait..";
                 var dataToSend = elapsedTime+","+person+":"+tracks.toString()+":"+decision;
-                window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
+                var address = document.location.href;
+                if(address.indexOf("localhost"))
+                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
+                else if(addres.indexOf("wiu.edu"))
+                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
+                else
+                    window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
             }
             else{
                 var currentTime = new Date();
+                frameDiff = currentTime - lastFrame;
+                scale = frameDiff/1000;
+                lastFrame = currentTime;
                 elapsedTime = currentTime - startTime;
                 elapsedTime = Math.floor(elapsedTime/1000);
                 document.getElementById("time").innerHTML = "Time: " + elapsedTime + " Seconds";
@@ -519,7 +558,7 @@
         var keysLeft = [37];
         var keysRight = [39];
         var direction = new BABYLON.Vector3(0, 0, 0);
-        var speed = 0.3;
+        var speed = 6;
         var scale = 1;
         var collision = false;
         var directionx = new BABYLON.Vector3(0, 0, 0);
@@ -532,7 +571,6 @@
             var keyCode = keys[index];
             if (keysLeft.indexOf(keyCode) !== -1) {
                 directionx.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
-                camerax.addInPlace(new BABYLON.Vector3(-speed * scale, 0, 0));
             } else if (keysUp.indexOf(keyCode) !== -1) {
                 directiony.addInPlace(new BABYLON.Vector3(0, speed * scale, 0));
             } else if (keysRight.indexOf(keyCode) !== -1) {
@@ -547,6 +585,7 @@
          car.position.addInPlace(directionx);
          camera.position.addInPlace(directionx);
          if(checkCollisions()){
+            //console.log("Collision detected !!");
             car.position.addInPlace(new BABYLON.Vector3(-directionx.x,0,0));
             camera.position.addInPlace(new BABYLON.Vector3(-directionx.x,0,0));
          }
@@ -554,6 +593,7 @@
          camera.position.addInPlace(directiony);
          camera2.position.addInPlace(directiony);
          if(checkCollisions()){
+            //console.log("Collision detected !!");
             car.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
             camera.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
             camera2.position.addInPlace(new BABYLON.Vector3(0,-directiony.y,0));
@@ -679,22 +719,26 @@
 
              if(track[upside][leftside] === 2){
                 if((actualUpSide-upside)>=(actualLeftSide-leftside)){
+                    //console.log("Collision deteced at 691   "+track[upside][leftside]);
                     return true;
                 }
             }
             else if(track[upside][rightside] === 2 ){
                 if((actualUpSide-upside)>=(actualRightSide-rightside)){
+                    //console.log("Collision deteced at 697");
                     return true;
                 }
             }
             
             if(track[downside][rightside] === 3){
                 if((actualDownside-downside)<= (actualRightSide-rightside)){
+                    //console.log("Collision deteced at 704");
                     return true;
                 }
             }
             else if(track[downside][leftside] === 3){
                 if((actualDownside-downside)<=(actualLeftSide-leftside)){
+                    //console.log("Collision deteced at 710");
                     return true;
                 }
             }
@@ -704,6 +748,7 @@
                 var xparamater = actualLeftSide-leftside;
                 xparamater = size-xparamater;
                 if(yparameter<=xparamater){
+                    //console.log("Collision deteced at 720");
                     return true;
                 }
             }
@@ -712,7 +757,7 @@
                 var xparamater = actualLeftSide-leftside;
                 xparamater = size-xparamater;
                 if(yparameter<=xparamater){
-                    //console.log("True from upside ");
+                    //console.log("True from upside 729");
                     return true;
                 }
             }
@@ -724,7 +769,7 @@
                 var xparamater = actualRightSide-rightside;
                 xparamater = size-xparamater;
                 if(yparameter>=xparamater){
-                    //console.log("True from upside ");
+                    //console.log("True from upside 741");
                     return true;
                 }
             }
@@ -733,6 +778,7 @@
                 var xparamater = actualRightSide-rightside;
                 xparamater = size-xparamater;
                 if(yparameter>=xparamater){
+                    //console.log("Collision deteced at 750    "+track[downside][rightside]);
                     return true;
                 }
             }
@@ -740,18 +786,23 @@
 
 
             if(track[upside][leftside] === 0){
+                //console.log("Collision deteced at 758");
                 return true;
             }
             else if(track[upside][rightside] === 0 ){
+                //console.log("Collision deteced at 762");
                 return true;
             }
             else if(track[downside][leftside] === 0){
+                //console.log("Collision deteced at 766");
                 return true;
             }
             else if(track[downside][rightside] === 0){
+                //console.log("Collision deteced at 770");
                 return true;
             }
             else if(leftside < 0 || downside < 0){
+                //console.log("Collision deteced at 774");
                 return true;
             }
             else{
