@@ -1,39 +1,235 @@
 var left = 0;
 var right = 0;
 var smallLargetracks = -1;
+var trackSelection = 0;
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/*
+ * 4 choices
+ * Track Construction with left followed by right or vice versa plus more options listed below
+ * 1)Tracks with Stars with long turns 
+ * 2)Tracks with stars with short turns
+ * 3)Tracks without stars with long turns
+ * 4)Tracks without stars with short turns
+ */
 function  selectTrack(prev){
     var result = 0;
-    if(prev === 0){
-        result = getRandomInt(1,16);
-        if(prev === 1 || prev === 5 || prev === 9 || prev === 13 || prev === 4 || prev === 8 || prev === 12 || prev === 16)
-            right++;
-        else 
-            left++;
+    if(trackSelection === 1){
+//        var choice = [9, 10, 11, 12];
+        if(prev === 0){
+            result = getRandomInt(9, 12);
+            if(prev === 9 || prev === 12)
+                right++;
+            else 
+                left++;
+        }
+        else if(prev === 9 || prev === 10){
+            var choices = [11, 12];
+            result = choices[getRandomInt(1, 2)-1];
+            if(result === 12){
+                if(right !== 5)
+                    right++;    
+                else{
+                    result = 11;
+                    left++;
+                }
+            }
+            else{
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 12;
+                    right++;
+                }
+            }
+        }
+        else if(prev === 11 || prev === 12){
+            var choices = [9, 10];
+            result = choices[getRandomInt(1, 2)-1];
+            if(result === 9){
+                if(right !== 5)
+                    right++;    
+                else{
+                    result = 10;
+                    left++;
+                }
+            }
+            else{
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 9;
+                    right++;
+                }
+            }
+        }
     }
-    else if(prev === 1 || prev === 5 || prev === 9 || prev === 13){
-        var group = [3, 7, 11, 15];
-        result = group[getRandomInt(1, 4)-1];
-        left++;
+    else if(trackSelection === 2){
+//        var choice = [13, 14, 15, 16];
+        if(prev === 0){
+            result = getRandomInt(13, 16);
+            if(prev === 13 || prev === 16)
+                right++;
+            else 
+                left++;
+        }
+        else if(prev === 13 || prev === 14){
+            var choices = [15, 16];
+            result = choices[getRandomInt(1,2)-1];
+            if(result === 15){
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 16;
+                    right++;
+                }
+            }
+            else{
+                if(right !== 5){
+                    right++;
+                }
+                else{
+                    result = 15;
+                    left++;
+                }
+            }
+        }
+        else if(prev === 15 || prev === 16){
+            var choices = [13, 14];
+            result = choices[getRandomInt(1,2)-1];
+            if(result === 14){
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 13;
+                    right++;
+                }
+            }
+            else{
+                if(right !== 5){
+                    right++;
+                }
+                else{
+                    result = 14;
+                    left++;
+                }
+            }
+        }
     }
-    else if(prev === 4 || prev === 8 || prev === 12 || prev === 16){
-        var group = [2, 6, 10, 14];
-        result = group[getRandomInt(1, 4)-1];
-        left++;
+    else if(trackSelection === 3){
+        //var choice = [1, 2, 3, 4];
+        if(prev === 0){
+            result = getRandomInt(1, 4);
+            if(prev === 1 || prev === 4)
+                right++;
+            else 
+                left++;
+        }
+        else if(prev === 1 || prev === 2){
+            var choices = [3, 4];
+            result = choices[getRandomInt(1, 2) - 1];
+            if(result === 3){
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 4;
+                    right++;
+                }
+            }
+            else{
+                if(right !== 5){
+                    right++;
+                }
+                else{
+                    result = 3;
+                    left++;
+                }
+            }
+        }
+        else if(prev === 3 || prev === 4){
+            var choices = [1, 2];
+            result = choices[getRandomInt(1, 2)-1];
+            if(result === 2){
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 1;
+                    right++;
+                }
+            }
+            else{
+                if(right !== 5){
+                    right++;
+                }
+                else{
+                    result = 2;
+                    left++;
+                }
+            }
+        }
     }
-    else if(prev === 2 || prev === 6 || prev === 10 || prev === 14){
-        var group = [4, 8, 12, 16];
-        result = group[getRandomInt(1, 4)-1];
-        right++;
-    }
-    else if(prev === 3 || prev === 7 || prev === 11 || prev === 15){
-        var group = [1, 5, 9, 13];
-        result = group[getRandomInt(1, 4)-1];
-        right++;
+    else if(trackSelection === 4){
+        //var choice = [5, 6, 7, 8];
+        if(prev === 0){
+            result = getRandomInt(5, 8);
+            if(prev === 5 || prev === 8)
+                right++;
+            else 
+                left++;
+        }
+        else if(prev === 5 || prev === 6){
+            var choices = [7, 8];
+            result = choices[getRandomInt(1, 2)-1];
+            if(result === 7){
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result = 8;
+                    right++;
+                }
+            }
+            else{
+                if(right !== 5){
+                    right++;
+                }
+                else{
+                    result = 7;
+                    left++;
+                }
+            }
+        }
+        else if(prev === 7 || prev === 8){
+            var choices = [5, 6];
+            result = choices[getRandomInt(1, 2)-1];
+            if(result === 6){
+                if(left !== 5){
+                    left++;
+                }
+                else{
+                    result =5;
+                    right++;
+                }
+            }
+            else{
+                if(right !== 5){
+                    right++;
+                }
+                else{
+                    result = 6;
+                    left++;
+                }
+            }
+        }
     }
     return result;
 }
@@ -154,6 +350,7 @@ var endPtr = 0;
 
 function trackGeneration(){
     var carStatus = 0;
+    trackSelection = getRandomInt(1, 4);
     for(var i=0;i<trackheight;i++){
         track.push([]);
     }
@@ -161,9 +358,10 @@ function trackGeneration(){
     for(var i=0;i<trackheight;i++){
         if(i%height === 0){
             smalli = 0;
-            prevSegment = selectTrack(prevSegment);
-            if(i < (trackheight-height))
+            if(i < trackheight-height){
+                prevSegment = selectTrack(prevSegment);
                 tracks.push(prevSegment);
+            }
             if(carStatus !== 1){
                 carStatus = 1;
                 setCar(prevSegment);
@@ -293,9 +491,8 @@ function trackGeneration(){
 }
 
 
-               
              //1[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] 
-var track1 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+var track1 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -330,8 +527,8 @@ var track1 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               ];
                       
               
-               //9[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] 
-var track9 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+               //[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] 
+var track9 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -618,7 +815,7 @@ var track3 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
               
               
                 //11[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] 
-var track11 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+var track11 =   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,-5,-4,39,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
