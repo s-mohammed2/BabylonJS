@@ -73,9 +73,6 @@
                 -moz-box-shadow: 0 0 1px rgba(0,0,0, .75);
                 box-shadow: 0 0 1px rgba(0,0,0, .75);
             }
-            #imageBody{
-                border: 1px red;
-            }
         </style>
     </head>
 <body>
@@ -96,37 +93,6 @@
     <div id="time" style="display: none;">Time: 0</div>
     <div id="time_div"></div>   
     <script type="text/javascript">   
-        function so_cleardiv(myDiv){
-            while (myDiv.firstChild) {
-                myDiv.removeChild(myDiv.firstChild);
-            }
-        }
-        
-        function load_image(){
-            var content = document.getElementById('start');
-            so_cleardiv(content);
-            var element = document.createElement('p');
-            var newtext = document.createTextNode("A mini map of the track located on the right side can be used to navigate from start to finish."); 
-            element.appendChild(newtext);
-            content.appendChild(element);
-            var innerDiv = document.createElement('div');
-            innerDiv.setAttribute("id", "imageBody");
-            innerDiv.style.top = "5px";
-            var imgTag = document.createElement('img');
-            imgTag.setAttribute("src", "screenshot.jpg");
-            imgTag.setAttribute("height", "400");
-            imgTag.setAttribute("width", "800");
-            innerDiv.appendChild(imgTag);
-            content.appendChild(innerDiv);
-            var button = document.createElement('input');
-            button.setAttribute("type", "button");
-            button.setAttribute("value", "Start");
-            button.setAttribute("onclick", "start_game()");
-            button.setAttribute("id", "startButton");
-            content.appendChild(button);
-        }
-        
-        
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
         var scene = new BABYLON.Scene(engine);
@@ -134,11 +100,14 @@
         var camera = new BABYLON.FreeCamera("camera1",  new BABYLON.Vector3(20, 2, -10), scene);
         //BABYLON.Viewport = function (x, y, width, height); (20, 2, -20)
         camera.viewport = new BABYLON.Viewport(0, 0, 1, 1);
+        camera.layerMask = 2; // 010 in binary
         //camera.attachControl(canvas, true);
         
         var camera2 = new BABYLON.FreeCamera("camera2",  new BABYLON.Vector3(24, 14, -37), scene);
-        //camera2.viewport = new BABYLON.Viewport(0.8, 0.8, 0.2, 0.2);
-        camera2.viewport = new BABYLON.Viewport(0.8, 0.8, 0.15, 0.22);
+        //var camera2 = new BABYLON.FreeCamera("camera2",  new BABYLON.Vector3(24, 14, -47), scene);
+        camera2.viewport = new BABYLON.Viewport(0.8, 0.8, 0.2, 0.2);
+        //camera2.viewport = new BABYLON.Viewport(1, 1, 0.15, 0.22);
+//        camera2.viewport = new BABYLON.Viewport(0.2, 0.1, 0.90, 0.90);
         camera2.layerMask = 1;
         
         scene.activeCameras.push(camera);
@@ -164,14 +133,8 @@
         var scenes = -1;
         var elapsedTime = 0;
         var decision = "";
-        
-        
-        function start_game(){
-            loadingScreen(1);
-            document.getElementById('start').style.display = "none";
-            scenes = 0;
-        }
        
+        //loadingScreen(1);
         trackGeneration();
         for(var i=0;i<trackheight;i++){
             for(var j=0;j<trackwidth;j++){                
@@ -196,20 +159,18 @@
                     car.renderingGroupId = 1;
                     car.position = new BABYLON.Vector3(j*size, i*size, 0);
                     camera.position = new BABYLON.Vector3(j*size, i*size, -10);
-                    
-                    camera.layerMask = 2; // 010 in binary
 
                     var s = BABYLON.Mesh.CreateSphere("player2", 16, 4, scene);
-                    s.registerBeforeRender(function() {
-                        s.position.x = car.position.x;
-                        s.position.y = car.position.y;
-                    });
                     var red = new BABYLON.StandardMaterial("red", this.scene);
                     red.diffuseColor = BABYLON.Color3.Red();
                     red.specularColor = BABYLON.Color3.Black();
                     s.material = red;
                     s.renderingGroupId = 1;
                     s.layerMask = 1;
+                    s.registerBeforeRender(function() {
+                        s.position.x = car.position.x;
+                        s.position.y = car.position.y;
+                    });
                     
                 }
                 else if(track[i][j] === 0){   //tileable_grass_00.png
@@ -548,7 +509,7 @@
             scenes = 1;
             scene.render();
         }
-        else if(scenes !== 0 && scenes !== -1){
+        else if(scenes !== -1){
             var temp = new Date();
             var timer  = temp - startCount;
             timer = Math.floor(timer/1000);
@@ -571,7 +532,7 @@
                 lastFrame = new Date();
                 scenes = 2;
             }
-            scene.render();
+            //scene.render();
         }
         if(scenes === 2){
             checkInput();
@@ -594,11 +555,11 @@
                 result_div.innerHTML = "Thank You for playing 2D WEBGL GAME. Redirecting Please wait..";
                 var dataToSend = elapsedTime+","+person+":"+tracks.toString()+":"+decision;
                 var address = document.location.href;
-                if(address.indexOf("localhost"))
-                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
-                else if(addres.indexOf("wiu.edu"))
-                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
-                else
+//                if(address.indexOf("localhost"))
+//                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
+//                else if(addres.indexOf("wiu.edu"))
+//                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
+//                else
                     window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
             }
             else{
@@ -610,6 +571,7 @@
                 elapsedTime = Math.floor(elapsedTime/1000);
                 document.getElementById("time").innerHTML = "Time: " + elapsedTime + " Seconds";
             }
+            scene.render();
         }
     });
     
@@ -1174,6 +1136,43 @@
         function activateControls(){
             window.addEventListener("keydown", onKeyDown, false);
             window.addEventListener("keyup", onKeyUp, false);
+        }
+        
+        
+        function so_cleardiv(myDiv){
+            while (myDiv.firstChild) {
+                myDiv.removeChild(myDiv.firstChild);
+            }
+        }
+        
+        function load_image(){
+            var content = document.getElementById('start');
+            so_cleardiv(content);
+            var element = document.createElement('p');
+            var newtext = document.createTextNode("A mini map of the track located on the right side can be used to navigate from start to finish."); 
+            element.appendChild(newtext);
+            content.appendChild(element);
+            var innerDiv = document.createElement('div');
+            innerDiv.setAttribute("id", "imageBody");
+            innerDiv.style.top = "5px";
+            var imgTag = document.createElement('img');
+            imgTag.setAttribute("src", "screenshot.jpg");
+            imgTag.setAttribute("height", "400");
+            imgTag.setAttribute("width", "800");
+            innerDiv.appendChild(imgTag);
+            content.appendChild(innerDiv);
+            var button = document.createElement('input');
+            button.setAttribute("type", "button");
+            button.setAttribute("value", "Start");
+            button.setAttribute("onclick", "start_game()");
+            button.setAttribute("id", "startButton");
+            content.appendChild(button);
+        }
+        
+        function start_game(){
+            document.getElementById('start').style.display = "none";
+            loadingScreen(1);
+            scenes = 0;
         }
         
         
