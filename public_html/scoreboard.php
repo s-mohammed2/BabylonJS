@@ -24,7 +24,7 @@ Design credits to http://www.lingulo.com
         <script src="js/script.js"></script>
 		<script>
 			function playAgain() {
-				window.open("http://www.wiu.edu/users/sm101");
+				 window.location.href = "http://www.wiu.edu/users/sm101?data=2";
 			}
 		</script>
 	</head>
@@ -61,13 +61,14 @@ Design credits to http://www.lingulo.com
 					 /*if(is_writable('data.txt')){
  					   echo "file is writable<br>";
 					}*/
-					//echo $_GET['data'];
 					$stringToAppend = $_GET['data'];
 					if($stringToAppend != ""){
 						$names = explode(":", $stringToAppend)[0] . "\n";
 						$dataToWrite = explode(":", $stringToAppend)[1] . " " . explode(":", $stringToAppend)[2] . "\n";
-						file_put_contents('data/data.txt', $dataToWrite, FILE_APPEND);
-						file_put_contents('data/scores.txt', $names, FILE_APPEND);
+						$fullData = explode(":", $stringToAppend)[0] . " ".explode(":", $stringToAppend)[1] . " " . explode(":", $stringToAppend)[2] . " " . explode(":", $stringToAppend)[3] . "\n";
+						file_put_contents('data/fulldata.txt', $fullData, FILE_APPEND);
+						file_put_contents('data/testdata.txt', $dataToWrite, FILE_APPEND);
+						file_put_contents('data/testscores.txt', $names, FILE_APPEND);
 					}
 					?>
 
@@ -94,7 +95,7 @@ Design credits to http://www.lingulo.com
 						<?php
 						$allValues = array();
 					        $counter = 0;
-						$handle = @fopen("data/scores.txt", "r");
+						$handle = @fopen("data/testscores.txt", "r");
 						if ($handle) {
 							while (($buffer = fgets($handle, 4096)) !== false) {
 
@@ -148,7 +149,7 @@ Design credits to http://www.lingulo.com
             <section id="copyright">
             	<h3 class="hidden">Copyright notice</h3>
                 <div class="wrapper">
-                    <!-- &copy; Copyright 2014 by <a href=""></a>. All Rights Reserved.  -->
+                    <!-- &copy; Copyright 2014 by <a href="http://www.example.com">Example</a>. All Rights Reserved.  -->
                 </div>
             </section>
            </footer>

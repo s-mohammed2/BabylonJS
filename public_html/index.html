@@ -5,7 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>2D Racing Game</title>
         <script src="babylon.js"></script>
-<!--        <script src="http://www.babylonjs.com/babylon.js"></script>-->
         <script type="text/javascript" src="trackConstruction.js"></script>  
 <!--        <script type="text/javascript" src="trackGenerator.js"></script>-->
         <style>
@@ -93,6 +92,16 @@
     <div id="time" style="display: none;">Time: 0</div>
     <div id="time_div"></div>   
     <script type="text/javascript">   
+        var attempt = -1;
+        var address = document.location.href;
+        if(address.indexOf("?") !== -1){
+            var pieces = address.split("?")[1];
+            attempt = pieces.substring(5, 6);
+            console.log("This is address---->"+attempt);
+        }
+        else{
+            attempt = 1;
+        }
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
         var scene = new BABYLON.Scene(engine);
@@ -553,13 +562,14 @@
                 result_div.style.left = "285px";
                 result_div.style.top = "125px";
                 result_div.innerHTML = "Thank You for playing 2D WEBGL GAME. Redirecting Please wait..";
-                var dataToSend = elapsedTime+","+person+":"+tracks.toString()+":"+decision;
+                var dataToSend = elapsedTime+","+person+":"+tracks.toString()+":"+decision+":"+attempt;
                 var address = document.location.href;
 //                if(address.indexOf("localhost"))
 //                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
 //                else if(addres.indexOf("wiu.edu"))
 //                    window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
 //                else
+                    //window.location.href = "http://wiu.edu/users/sm101/test.php?data="+dataToSend;
                     window.location.href = "http://wiu.edu/users/sm101/scoreboard.php?data="+dataToSend;
             }
             else{
